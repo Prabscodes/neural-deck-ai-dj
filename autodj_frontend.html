@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#11131d">
+  <title>Neural Deck — Your live AI DJ</title>
+  <link rel="icon" type="image/png" href="/deck-assets/deck-icon.png">
+  <link rel="stylesheet" href="/deck-assets/console.css">
+  <script defer src="/deck-assets/console.js"></script>
+</head>
+<body>
+  <div class="shell">
+    <header class="masthead">
+      <a class="brand" href="/" aria-label="Neural Deck home">
+        <span class="brand-icon" aria-hidden="true"><i></i><i></i><i></i></span>
+        Neural Deck
+      </a>
+      <span class="connection" id="console-state" data-state="idle">
+        <i aria-hidden="true"></i><span>Ready</span>
+      </span>
+    </header>
+
+    <main>
+      <div class="hero">
+        <h1>What should we <em>play?</em></h1>
+        <p>Tell your AI DJ what you feel like hearing. It’ll make a live mix and keep it going.</p>
+      </div>
+
+      <div class="deck-grid">
+        <section class="panel request-panel" aria-labelledby="request-heading">
+          <form id="dj-form" novalidate>
+            <label id="request-heading" for="request">Your request</label>
+            <textarea id="request" maxlength="1000" placeholder="Try heavy dubstep with grand piano. Start melodic, then turn up the energy."></textarea>
+            <div class="presets" aria-label="Example requests">
+              <button type="button" class="chip" data-prompt="Heavy modern melodic dubstep with distinct acoustic grand piano hooks, around 140 BPM. Build from a beat-backed piano opening into pitched growl bass and hard half-time drums. Keep the energy rising and the joins rhythmically clean.">Piano dubstep</button>
+              <button type="button" class="chip" data-prompt="Late-night progressive house with deep analog bass, airy pads and a steady hypnotic kick. Build the energy slowly and keep the grooves flowing smoothly.">Late-night drive</button>
+              <button type="button" class="chip" data-prompt="Warm instrumental electronic music for quiet focus. Begin with mellow keys, then bring in a soft, steady groove and keep the energy relaxed.">Deep focus</button>
+            </div>
+            <button class="button primary" id="live-start" type="submit"><span class="play-icon" aria-hidden="true"></span> Start listening</button>
+            <button class="button primary" id="live-steer" type="submit" hidden>Send request <span aria-hidden="true">↗</span></button>
+          </form>
+          <p id="status" class="activity" role="status" aria-live="polite">The first tracks can take a minute or two to get ready.</p>
+        </section>
+
+        <section class="panel playback-panel" aria-labelledby="playback-heading">
+          <div class="section-heading">
+            <h2 id="playback-heading">Now playing</h2>
+            <div class="playing-mark" aria-hidden="true"><i></i><i></i><i></i></div>
+          </div>
+          <h3 id="output-heading">Your mix starts here</h3>
+          <div class="scope" id="visual" aria-hidden="true">
+            <canvas id="spectrum"></canvas>
+          </div>
+          <div id="live-progress" class="progress" hidden>
+            <span id="elapsed">0:00</span>
+            <progress id="playhead" max="1" value="0" aria-label="Track progress"></progress>
+            <span id="duration">0:00</span>
+          </div>
+          <div id="live-controls" class="transport" hidden>
+            <div class="controls">
+              <button class="button secondary" id="live-pause" type="button" disabled>Pause</button>
+              <button class="button plain" id="live-stop" type="button">Stop</button>
+            </div>
+            <div class="volume">
+              <button type="button" class="icon-button" id="mute-live" aria-label="Mute audio" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M10 5 5 9H2v6h3l5 4V5Z"/><path class="sound-waves" d="M14 9a4 4 0 0 1 0 6m3-9a8.5 8.5 0 0 1 0 12"/><path class="mute-cross" d="m15 9 6 6m0-6-6 6"/></svg></button>
+              <input aria-label="Volume" id="volume" type="range" min="0" max="100" value="100">
+            </div>
+          </div>
+          <section id="next-section" class="up-next" aria-labelledby="next-heading" hidden>
+            <h3 id="next-heading">Up next</h3>
+            <ol id="tracks"></ol>
+          </section>
+        </section>
+      </div>
+
+      <section class="panel monitor-panel" id="mix-monitor" aria-labelledby="monitor-heading">
+        <div class="monitor-readout">
+          <h2 id="monitor-heading">Mix monitor</h2>
+          <div class="monitor-levels">
+            <div class="level-row"><span>Bass</span><div class="level-track bass" aria-hidden="true"><i></i></div></div>
+            <div class="level-row"><span>Mids</span><div class="level-track mids" aria-hidden="true"><i></i></div></div>
+            <div class="level-row"><span>Highs</span><div class="level-track highs" aria-hidden="true"><i></i></div></div>
+          </div>
+        </div>
+        <div class="monitor-art" aria-hidden="true">
+          <div class="dj-performer"><span class="dj-mix"></span><span class="dj-accent"></span></div>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
