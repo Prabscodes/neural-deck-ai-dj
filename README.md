@@ -152,5 +152,10 @@ to the earlier studio workflow and are kept for history.
 ## License
 
 Source code: [PolyForm Noncommercial License 1.0.0](LICENSE). Free for noncommercial use, including
-study and coursework. This license covers this repository's code only. It does not cover the Stable
-Audio 3 model weights, ComfyUI, or audio generated with them, which have their own terms.
+study and coursework. This license covers this repository's code only.
+
+Music is generated with Stable Audio 3 under the Stability AI Community License (research and
+non-commercial use are free; the license says you own the outputs, to the extent the law allows, and
+outputs are not derivative works of the model). Its Gemma-licensed text encoder is covered by the Gemma
+Terms of Use. Model weights are not distributed here. See [NOTICE](NOTICE). Powered by Stability AI.
+Track planning uses Google's Gemini API.
