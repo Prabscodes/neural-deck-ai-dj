@@ -17,6 +17,7 @@ from autodj_beatmatch import BeatGrid, estimate_grid, align_incoming, trim_trail
 from autodj_agent import AgentError
 from autodj_gemini import GeminiError, generate_text
 from autodj_stable_audio import BACKEND as STABLE_BACKEND, StableAudio, StableAudioError, prepare_deck
+from autodj_bank import BankAudio, BACKEND as BANK_BACKEND
 
 LIVE_SYSTEM = '''You are an instrumental DJ. Choose the NEXT track and the transition from the previous track in response to the listener. Return ONLY a JSON object with exactly these fields: title (1-80 chars), style (1-300 chars, detailed instrumental music prompt), bpm (integer 70-180), camelot (1A through 12B), bars (8 or 16; prefer 16 to buffer ahead), backend (neural or synth), transition (cut, linear or equal_power), overlap_seconds (0.5, 1, 2 or 3). Choose neural when available; synth is a basic procedural electronic synthesizer that cannot follow genres. Prefer equal_power transitions for music unless the listener explicitly asks for cuts. For adjacent tracks in the same style, keep a compatible key and avoid simultaneous busy hooks at the transition. For the first track, transition fields are ignored. Plan a coherent next song and a transition responsive to the listener's request. Never return file paths or commands.'''
 
@@ -32,7 +33,7 @@ def validate_live_plan(value: Any, neural_available: bool, *, stable: bool = Fal
     if trans not in ('cut','linear','equal_power') or type(overlap) not in (int,float) or overlap not in (0.5,1,2,3): raise AgentError('Invalid transition')
     return {**value,'title':value['title'].strip(),'style':value['style'].strip()}
 
-def plan_next(request: str, previous: dict | None, neural: bool, model: str, *, audio_wav: bytes | None = None, stable: bool = False) -> dict:
+def plan_next(request: str, previous: dict | None, neural: bool, model: str, *, audio_wav: bytes | None = None, stable: bool = False, catalog: str | None = None) -> dict:
     keys=[f"{n}{letter}" for n in range(1,13) for letter in ("A","B")]
     schema={"type":"object","additionalProperties":False,"required":["title","style","bpm","camelot","bars","backend","transition","overlap_seconds"],"properties":{
         "title":{"type":"string"},
@@ -70,6 +71,13 @@ def plan_next(request: str, previous: dict | None, neural: bool, model: str, *, 
             " equal-power handoff when the incoming opening or outgoing track has a sparse rhythm."
             " The WAV combines a short opening sample and a short outgoing groove sample."
         )
+        if catalog:
+            instructions += (
+                " This producer is a fixed library of pre-rendered tracks, not a generator. Write the style"
+                " using the genre and instrument words of one library style below, with BPM near its listed"
+                " tempo and one of its listed keys. If the listener asks for something outside the library,"
+                " pick the closest style. Library: " + catalog
+            )
     context = {"listener_direction": request, "previous_track": previous}
     for attempt in range(2):
         try:
@@ -263,24 +271,31 @@ class LiveDJ:
     # Per-session caps bound planner/GPU spend on a shared deployment. Override with env vars.
     MAX_STEERS=int(os.environ.get('AUTODJ_MAX_STEERS','25'))
     MAX_TRACKS=int(os.environ.get('AUTODJ_MAX_TRACKS','60'))
+    MAX_SESSIONS=int(os.environ.get('AUTODJ_MAX_SESSIONS','1'))
+    music_backend: str | None=None  # overrides AUTODJ_MUSIC_BACKEND when set (the public server pins 'bank')
     def __init__(self, directory: str, producer: Any, audit: Callable, gate: threading.Lock, planner: Callable | None=None, sample_rate: int=44100):
         self.root=Path(directory).resolve(); self.root.mkdir(parents=True,exist_ok=True)
         self.producer=producer;self.audit=audit;self.gate=gate;self.planner=planner;self.sr=sample_rate
-        self.lock=threading.RLock();self.sessions: dict[str,dict]={};self.active: str | None=None
+        self.lock=threading.RLock();self.sessions: dict[str,dict]={};self.active: set[str]=set()
     def start(self, request: str, model: str, neural: bool) -> dict:
         request=request.strip()
         if not request or len(request)>1000: raise AgentError('Enter a request of at most 1000 characters')
         with self.lock:
-            if self.active is not None: raise AgentError('A live session is already active or stopping')
-            if not self.gate.acquire(blocking=False): raise AgentError('Another DJ run is active')
+            if len(self.active)>=self.MAX_SESSIONS:
+                raise AgentError('A live session is already active or stopping' if self.MAX_SESSIONS==1 else 'The DJ is busy with other listeners. Try again in a minute.')
+            # One session shares the GPU and studio, so it takes the exclusion gate. Several only run on the library backend.
+            gated=self.MAX_SESSIONS==1
+            if gated and not self.gate.acquire(blocking=False): raise AgentError('Another DJ run is active')
             sid=uuid.uuid4().hex
             try:
                 path=self.root/sid;path.mkdir()
-                state={'id':sid,'request':request,'model':model,'neural':neural,'state':'planning','error':None,'stop':False,'segments':[],'acked':-1,'lease':time.monotonic(),'previous':None,'revision':0,'next_seq':0}
-                self.sessions={sid:state};self.active=sid
+                state={'id':sid,'request':request,'model':model,'neural':neural,'state':'planning','error':None,'stop':False,'segments':[],'acked':-1,'lease':time.monotonic(),'previous':None,'revision':0,'next_seq':0,'gated':gated}
+                self.sessions={k:v for k,v in self.sessions.items() if k in self.active};self.sessions[sid]=state;self.active.add(sid)
                 threading.Thread(target=self._work,args=(sid,),daemon=True).start()
             except Exception:
-                self.active=None;self.sessions.pop(sid,None);self.gate.release();raise
+                self.active.discard(sid);self.sessions.pop(sid,None)
+                if gated:self.gate.release()
+                raise
         return {'session_id':sid}
     def _get(self,sid: str) -> dict:
         if sid not in self.sessions: raise AgentError('Live session not found')
@@ -324,12 +339,13 @@ class LiveDJ:
         tail=None; previous=None; tail_grid=None; tail_origin=0; arranged_tail=False
         previous_audio = None
         outgoing_phrase = None
-        stable = os.environ.get('AUTODJ_MUSIC_BACKEND', '').lower() == 'stable_audio'
+        music = (self.music_backend or os.environ.get('AUTODJ_MUSIC_BACKEND', '')).lower()
+        stable = music in ('stable_audio', 'bank')
         renderer = None
         recent = []
         try:
             if stable:
-                renderer = StableAudio(self.sr)
+                renderer = BankAudio(self.sr) if music == 'bank' else StableAudio(self.sr)
             while True:
                 with self.lock:
                     s=self._get(sid)
@@ -350,6 +366,7 @@ class LiveDJ:
                 })
                 if self.planner is None:
                     options = {"stable": True} if stable else {}
+                    if music == 'bank':options["catalog"] = renderer.catalog_text()
                     if stable and previous is not None:
                         context = {**previous, "recent_titles": recent[-3:],
                                    "measured_outgoing_bpm": round(tail_grid.bpm, 2) if tail_grid else None}
@@ -409,12 +426,16 @@ class LiveDJ:
                     handoff_seconds=time.monotonic()-t_handoff;t_listen=time.monotonic()
                     with self.lock:
                         s['state'] = 'listening'
-                    try:
-                        selected, listening = choose_listening_take(
-                            decks, plan, direction, model, self.sr, outgoing=outgoing_phrase, handoffs=handoffs)
-                    except (GeminiError, ValueError, TypeError, KeyError, AttributeError) as exc:
-                        selected, listening = 0, {"state": "signal fallback", "reason": str(exc),
-                                                  "heard_outgoing_phrase": False}
+                    if os.environ.get('AUTODJ_LISTENING', 'on').lower() == 'off':
+                        # Saves one audio-model call per track on a metered deployment; the best signal score wins.
+                        selected, listening = 0, {"state": "listening off", "heard_outgoing_phrase": False}
+                    else:
+                        try:
+                            selected, listening = choose_listening_take(
+                                decks, plan, direction, model, self.sr, outgoing=outgoing_phrase, handoffs=handoffs)
+                        except (GeminiError, ValueError, TypeError, KeyError, AttributeError) as exc:
+                            selected, listening = 0, {"state": "signal fallback", "reason": str(exc),
+                                                      "heard_outgoing_phrase": False}
                     listen_seconds=time.monotonic()-t_listen
                     if s['stop']:
                         break
@@ -422,7 +443,7 @@ class LiveDJ:
                     handoff = handoffs[selected] if handoffs is not None else None
                     self.audit(sid, 'live_listen', listening['state'], {'seq': seq, **listening})
                     wave, grid, trimmed_silence = deck.wave, deck.opening, deck.trimmed
-                    backend, arranged, arrangement_profile = STABLE_BACKEND, False, None
+                    backend, arranged, arrangement_profile = (BANK_BACKEND if music == 'bank' else STABLE_BACKEND), False, None
                 else:
                     candidates=[]
                     max_attempts=2 if os.environ.get('AUTODJ_MUSIC_BACKEND', '').lower() == 'ace_step' else 1
@@ -532,5 +553,5 @@ class LiveDJ:
                     except OSError:pass
                 try:(self.root/sid).rmdir()
                 except OSError:pass
-                if self.active==sid:self.active=None
-            self.gate.release()
+                self.active.discard(sid)
+            if s.get('gated'):self.gate.release()

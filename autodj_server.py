@@ -3054,6 +3054,14 @@ def create_app(cache_dir: str = "/dev/shm/autodj_studio", *, enable_legacy_studi
                 except StableAudioError as exc:
                     raise AgentError(str(exc)) from exc
                 neural = True
+            elif backend == "bank":
+                from autodj_bank import BankAudio
+                from autodj_stable_audio import StableAudioError
+                try:
+                    BankAudio(live_dj.sr).check()
+                except StableAudioError as exc:
+                    raise AgentError(str(exc)) from exc
+                neural = True
             elif backend == "ace_step":
                 driver = crew.producer.ace_driver
                 has_dit = driver.has_pretrained_dit_weights()

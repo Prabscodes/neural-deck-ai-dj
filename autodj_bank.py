@@ -71,8 +71,20 @@ class BankAudio:
                 continue  # Skip malformed entries; file names are plain names, never paths.
             seen.add(item["id"])
             entries.append({"id": item["id"], "file": item["file"], "camelot": item["camelot"],
+                            "style": str(item.get("style", ""))[:200],
                             "bpm": float(item["bpm"]), "tags": [str(t).lower() for t in item["tags"]]})
         return entries
+
+    def catalog_text(self) -> str:
+        """One line per library style, for the planner: the style text, its tempo, and its keys."""
+        styles: dict[str, dict] = {}
+        for entry in self.entries:
+            label = entry["style"] or " ".join(entry["tags"])
+            info = styles.setdefault(label, {"bpm": entry["bpm"], "keys": []})
+            if entry["camelot"] not in info["keys"]:
+                info["keys"].append(entry["camelot"])
+        return " | ".join(f"{label} ({info['bpm']:g} BPM; keys {', '.join(info['keys'])})"
+                          for label, info in styles.items())
 
     def check(self) -> None:
         if not self.entries:

@@ -79,6 +79,33 @@ and `AUTODJ_COMFY_BASE`. Always set both on another machine.
 | `AUTODJ_MAX_STEERS` | max follow-up requests per session | `25` |
 | `AUTODJ_MAX_TRACKS` | max tracks per session before it stops | `60` |
 
+## Public mode (no GPU)
+
+`autodj_public.py` is a slim server for a shared host. It serves only the listener page and
+`/api/dj-live/*`, never imports torch, and needs no GPU or ComfyUI. Instead of rendering, it plays a
+bank of tracks pre-rendered offline with Stable Audio. The Gemini planner still runs live for every
+track and its plan is validated as usual.
+
+```bash
+# once, on a machine with the renderer running (a GPU):
+.venv/bin/python tools/build_bank.py --out bank      # 48 tracks, about 52 MB
+
+# on the public host:
+AUTODJ_BANK_DIR=bank AUTODJ_GEMINI_TRANSPORT=api AUTODJ_GEMINI_MODEL=<model> GEMINI_API_KEY=<secret> \
+  python autodj_public.py --host 0.0.0.0 --port 8300
+```
+
+| Variable | Purpose | Default |
+|---|---|---|
+| `AUTODJ_BANK_DIR` | folder with `bank.json` and the audio | `bank` |
+| `AUTODJ_MAX_SESSIONS` | concurrent listeners | `3` |
+| `AUTODJ_MAX_STARTS_PER_HOUR` | session starts per client | `6` |
+| `AUTODJ_LISTENING` | `off` skips the per-track audio review to save API calls | `on` |
+| `AUTODJ_TRUST_PROXY` | `1` reads the client address from `X-Forwarded-For` (only behind a proxy) | off |
+
+The bank is a limited set of styles, so requests outside it get the closest match. Tracks are labeled
+by the prompts used, not by listening review.
+
 ## Tests
 
 ```bash
