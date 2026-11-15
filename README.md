@@ -121,3 +121,9 @@ to the earlier studio workflow and are kept for history.
 - Confirmation prompts are not used: the live path performs no destructive operations. It only deletes its own temporary WAV files.
 - The planner key is read from the server's environment only. The listener page and its scripts do not reference it.
 - Actions are logged for audit. The log can contain listener requests, so it is git-ignored.
+
+## License
+
+Source code: [PolyForm Noncommercial License 1.0.0](LICENSE). Free for noncommercial use, including
+study and coursework. This license covers this repository's code only. It does not cover the Stable
+Audio 3 model weights, ComfyUI, or audio generated with them, which have their own terms.
