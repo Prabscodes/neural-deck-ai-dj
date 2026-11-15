@@ -1,0 +1,12 @@
+.venv
+.git
+.agents
+.pytest_cache
+__pycache__
+dj_agent_runs
+demo-video
+docs
+tests
+tools
+*.md
+.env

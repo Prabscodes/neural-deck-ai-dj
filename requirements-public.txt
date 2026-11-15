@@ -1,0 +1,8 @@
+# Public (GPU-free, torch-free) server only. See requirements.txt for the full app.
+fastapi>=0.128
+uvicorn>=0.40
+pydantic>=2.12
+numpy>=2.4
+scipy>=1.16
+soundfile>=0.13
+websocket-client>=1.9
