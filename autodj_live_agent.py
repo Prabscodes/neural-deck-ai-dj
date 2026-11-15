@@ -343,6 +343,7 @@ class LiveDJ:
                         direction=s['request'];revision=s['revision'];model=s['model'];neural=s['neural'];s['state']='planning'
                     else:s['state']='buffered'
                 if full:time.sleep(.25);continue
+                t_plan=time.monotonic()
                 self.audit(sid,'live_plan','started',{
                     'request':direction,'revision':revision,'previous':previous,
                     'model':model,'has_audio_context':self.planner is None and previous_audio is not None,
@@ -369,7 +370,7 @@ class LiveDJ:
                     if not neural:raise AgentError('Neural generation is unavailable for the selected backend')
                     plan['backend']='neural'  # Explicit backend selection must never silently synthesize.
                 plan=constrain_live_tempo(plan,direction,previous,tail_grid)
-                self.audit(sid,'live_plan','completed',plan)
+                self.audit(sid,'live_plan','completed',plan);plan_seconds=time.monotonic()-t_plan
                 with self.lock:
                     if s['stop']:break
                     s['state']='generating';seq=s['next_seq']
@@ -377,7 +378,7 @@ class LiveDJ:
                 self.audit(sid,'live_generate','started',{'seq':seq,'plan':plan})
                 handoff = None
                 if renderer is not None:
-                    decks = []
+                    t_render=time.monotonic();decks = []
                     for attempts in range(1, 4):
                         try:
                             candidate = prepare_deck(
@@ -399,11 +400,13 @@ class LiveDJ:
                         break
                     if not decks:
                         raise StableAudioError('No playable audio was generated')
+                    render_seconds=time.monotonic()-t_render;t_handoff=time.monotonic()
                     decks.sort(key=lambda item: -item.score)
                     handoffs = None
                     if tail is not None:
                         handoffs = [prepare_handoff(candidate, tail, tail_grid, tail_origin, plan, self.sr)
                                     for candidate in decks]
+                    handoff_seconds=time.monotonic()-t_handoff;t_listen=time.monotonic()
                     with self.lock:
                         s['state'] = 'listening'
                     try:
@@ -412,6 +415,7 @@ class LiveDJ:
                     except (GeminiError, ValueError, TypeError, KeyError, AttributeError) as exc:
                         selected, listening = 0, {"state": "signal fallback", "reason": str(exc),
                                                   "heard_outgoing_phrase": False}
+                    listen_seconds=time.monotonic()-t_listen
                     if s['stop']:
                         break
                     deck = decks[selected]
@@ -489,6 +493,8 @@ class LiveDJ:
                     meta['mix_in_cue_seconds'] = deck.cue_seconds
                     meta['mix_in_has_kick'] = deck.entry_has_kick
                     meta['listening'] = listening
+                    meta['timing_seconds'] = {'plan': round(plan_seconds, 1), 'render': round(render_seconds, 1),
+                                              'handoff_prep': round(handoff_seconds, 1), 'listen': round(listen_seconds, 1)}
                     # This groove estimate applies to the body, not the requested tempo.
                     if meta['measured_bpm'] is None:
                         meta['measured_bpm'] = meta['mix_out_bpm']

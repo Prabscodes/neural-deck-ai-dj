@@ -309,6 +309,15 @@ const phases = {
   listening: "Checking how the next track fits…"
 };
 
+// Start on one track when it is long enough to cover making the next one. The next track took
+// about 1.2x as long as the first in measured runs, so require 1.75x plus a margin; otherwise
+// keep waiting for two tracks.
+function canStartEarly(session, segments) {
+  if (segments.length < 1) return false;
+  if (session.firstReadyAfter === undefined) session.firstReadyAfter = (performance.now() - session.requestedAt) / 1000;
+  return segments[0].duration_seconds >= 1.75 * session.firstReadyAfter + 8;
+}
+
 async function pollLive(session) {
   if (live !== session) return;
   try {
@@ -324,7 +333,7 @@ async function pollLive(session) {
     }
     session.segments = data.segments;
     renderUpcoming(session);
-    if (session.started || data.segments.length >= 2 || data.state === "draining") {
+    if (session.started || data.segments.length >= 2 || data.state === "draining" || canStartEarly(session, data.segments)) {
       for (const segment of data.segments) {
         if (live !== session) return;
         if (segment.seq > session.highestScheduled) await scheduleSegment(session, segment);
@@ -362,7 +371,7 @@ async function start(request) {
     const session = {
       id: data.session_id, context, analyser, gain, bins: new Uint8Array(analyser.frequencyBinCount),
       sources: new Set(), schedule: [], segments: [], highestScheduled: -1, nextTime: 0,
-      lastPlayingSeq: -1, underruns: 0, ackQueue: Promise.resolve(), lastPaint: -Infinity, steerUntil: 0
+      lastPlayingSeq: -1, underruns: 0, ackQueue: Promise.resolve(), lastPaint: -Infinity, steerUntil: 0, requestedAt: performance.now()
     };
     live = session;
     setVolume();
