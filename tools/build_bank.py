@@ -51,6 +51,13 @@ def save(out: Path, bank: dict) -> None:
     tmp.replace(out / "bank.json")
 
 
+def write_ogg(path: Path, wave) -> None:
+    # One big sf.write call crashes libsndfile 1.2.2's Vorbis encoder (segfault); chunked writes work.
+    with sf.SoundFile(str(path), "w", SR, 2, format="OGG", subtype="VORBIS") as handle:
+        for start in range(0, len(wave), 16384):
+            handle.write(wave[start:start + 16384])
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("--out", default="bank")
@@ -87,7 +94,7 @@ def main() -> None:
                     print(f"{track_id}: skipped")
                     continue
                 filename = f"{track_id}.ogg"
-                sf.write(str(out / filename), wave, SR, format="OGG", subtype="VORBIS")
+                write_ogg(out / filename, wave)
                 bank["tracks"].append({"id": track_id, "file": filename, "style": brief, "tags": tags,
                                        "bpm": bpm, "camelot": key, "seed": seed,
                                        "seconds": round(len(wave) / SR, 1)})
