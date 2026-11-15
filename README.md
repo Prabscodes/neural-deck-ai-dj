@@ -1,49 +1,118 @@
-# NEURAL DECK // AI-Auto-DJ (`ai-auto-dj`)
+# Neural Deck
 
-> For the LLM-directed two-track demo and verified backend limitations, see [AGENT_DEMO.md](AGENT_DEMO.md). The original feature descriptions below include aspirational and unverified claims; the procedural fallback is not ACE-Step inference.
+An AI DJ agent for listeners, not DJs. You describe what you want to hear ("dubstep with a piano hook"),
+press **Start listening**, and the music keeps playing. You can send another request at any time and the
+next tracks follow it.
 
-A single-GUI, local-first / hybrid-capable **6-Agent Virtual DJ & Music Production Studio** built on **`LangGraph 1.2.10`**, **`PyTorch 2.9.1+cu128`**, **`Transformers 5.14.1`**, **`Diffusers 0.36.0`**, **`librubberband.so.2` (Rubber Band R3 Finer Engine)**, **`Kokoro-82M`**, and **PipeWire (`pw-play`)**.
+Built for CS4680 Prompt Engineering, AI Agent Project.
 
----
+## How it works
 
-## 1. Launch Everything from a Single Command & Single GUI
+1. **Plan (LLM).** A Gemini "Hydrogen" model turns your request into a small JSON plan: title, style
+   description, BPM, key, length, transition type, and overlap.
+2. **Validate.** The plan is checked against a strict schema before anything runs
+   (`validate_live_plan` in `autodj_live_agent.py`): exact field set, BPM 70-180, key `1A`-`12B`,
+   allowed transitions and overlaps, text length limits. Invalid plans are rejected, never executed.
+   The model's text is never run as a command. It can only choose among known music operations.
+3. **Generate.** Stable Audio 3 Small-Music, running locally through ComfyUI, renders up to three
+   candidate takes per slot.
+4. **Listen and select.** The Gemini model listens to the outgoing phrase and the candidate handoffs
+   as actually rendered, and scores genre, groove, instrument, and continuity. If listening fails, a
+   bounded signal-based fallback picks a take.
+5. **Mix.** `autodj_beatmatch.py` estimates beat grids and time-stretches within a conservative ratio.
+   When the grid is weak it uses a short fade instead of forcing a beat match.
+6. **Play.** The browser decodes and schedules the audio chunks on the Web Audio clock, acknowledges
+   played chunks, and the server keeps a bounded lookahead queue so work does not run away.
+7. **Audit.** Every plan, generation, listening result, steer request, retry, stop, and failure is
+   appended to `dj_agent_runs/actions.jsonl`.
 
-Start the entire studio from the unified entry point [`autodj.py`](file:///home/prab/.gemini/antigravity/scratch/ai-auto-dj/autodj.py):
+The compact **Mix monitor** (bass, mids, highs) and the animated pixel DJ are presentation only. They
+do not control the mix.
+
+## Requirements
+
+- Linux with an NVIDIA GPU (developed on an RTX 5090).
+- Python 3.11. The app environment needs the packages in `requirements.txt`.
+- FFmpeg built with Rubber Band, used for pitch-preserving tempo changes.
+- A local [ComfyUI](https://github.com/comfyanonymous/ComfyUI) install with its own Python environment,
+  plus these model files in its base directory:
+  - `models/checkpoints/stable_audio_3_small_music.safetensors`
+  - `models/text_encoders/t5gemma_b_b_ul2.safetensors`
+- A Gemini planner, either:
+  - **CLI (default):** the Antigravity CLI (`agy`) signed in locally, or
+  - **API:** `AUTODJ_GEMINI_TRANSPORT=api`, a model ID you have access to in `AUTODJ_GEMINI_MODEL`, and
+    `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) set in the server's environment.
+
+The model weights and any keys are not part of this repository.
+
+## Run
 
 ```bash
-/home/prab/.gemini/antigravity/scratch/ai-auto-dj/autodj.py
+python3.11 -m venv .venv
+.venv/bin/pip install -r requirements.txt
+cp .env.example .env   # edit it; .env is git-ignored
+
+set -a; source .env; set +a   # the app does not read .env itself
+./start_live_stable.sh
 ```
 
-Then open **`http://127.0.0.1:8088`** (opens automatically when a desktop display is active).
+Open http://127.0.0.1:8300/. The launcher starts the local renderer on port 8296 if it is not already
+running. The first two tracks buffer during the intro, so the first playback can take a minute or more.
 
-### What You Can Do Inside the Single GUI (`http://127.0.0.1:8088`)
-- **⚡ 1-Click Quick-Start Demo Mix**: Generates 3 club tracks (`126` / `128` / `130` BPM, Keys `8A` / `9A`), separates 4 stems (`drums`, `bass`, `other`, `vocals`), plans the harmonic energy arc, renders sample-accurate transitions + `Kokoro-82M` DJ MC voiceovers, certifies via 2-Stage `CriticAgent`, and immediately plays the master mix in your browser.
-- **🎧 Dual Motorized CDJ-3000 Decks (Deck A & Deck B)**:
-  - Spinning platters with central OLED readouts (`BPM`, `Camelot Key`, `LUFS`, `Cue In/Out Bars`).
-  - Stacked multi-color **4-Stem RGB Battle Waveforms** (`#waveCanvasA`, `#waveCanvasB`) with downbeat-snapped EDM section banners (`INTRO`, `BUILD`, `DROP`, `BREAKDOWN`, `OUTRO`) and 8 clickable RGB Hot-Cue Jump Pads per deck.
-  - Per-deck **4-Stem Isolator Faders (`DRUMS`, `BASS`, `VOCALS`, `OTHER`)**, Mute buttons (`[M]`), and **Isolated Stem Solo Audition (`[🎧]`)** streaming directly from `/dev/shm`.
-- **🎛️ Center 4-Channel Neural Mixer & Camelot Harmonic Wheel**:
-  - Interactive **24-Key SVG Camelot Wheel (`1A`–`12B`)** with live Deck A → Deck B compatibility scoring $S(A,B)$.
-  - **Transition Archetype Selector (`AUTO`, `T1`–`T6`)** with live mathematical stem automation curves (`#envCanvas`) and `Bass-Swap Law` guard visualization.
-  - **Live Mix Deck A → B Now** button + interactive hardware Crossfader.
-- **🗂️ Crate, Local Folder Scanner & AI Music Producer**:
-  - Scan & index any local folder or `.wav`/`.mp3`/`.flac` file (`POST /api/library/scan`).
-  - Produce new club tracks or bridges via **`ACE-Step 1.5` (Local GPU)**, **`MusicGen-Stereo-Melody` (4D Stems)**, or **`Suno v5` (Cloud Co-Producer)** (`POST /api/produce`).
-- **🤖 6-Agent Mode Matrix, Crowd Steering, Host MC & 4-Panel Spectrogram Inspector**:
-  - Per-agent `Local (RTX 5090)` / `Hybrid` / `Cloud` toggles and Option A1 Audio Ear selector (`nvidia/music-flamingo-think-2601-hf`, `nvidia/audio-flamingo-next-think-hf`, `google/gemma-4-E4B-it`, `Qwen/Qwen3-Omni-30B-A3B-Instruct`).
-  - Live `Kokoro-82M` DJ Radio MC hype drop synthesizer (`POST /api/host-drop`) with `-10 dB` mid-band (`300–3500 Hz`) sidechain ducking.
-  - Built-in **4-Panel `1024x1024` Visual-Acoustic Spectrogram Bridge** viewer & Stage-1/Stage-2 `CriticAgent` QA scorecard.
-  - Built-in HTML5/WebAudio player with **48-Band Real-Time FFT Spectrum Analyzer**, `.WAV`/`.CUE` downloads, and 1-click **PipeWire (`pw-play`)** hardware output.
+Note: `start_live_stable.sh` still has the original author's paths as defaults for `AUTODJ_COMFY_DIR`
+and `AUTODJ_COMFY_BASE`. Always set both on another machine.
 
----
+## Configuration
 
-## 2. Internal 6-Agent Crew Modules (Orchestrated Automatically Behind the GUI)
+| Variable | Purpose | Default |
+|---|---|---|
+| `AUTODJ_GEMINI_TRANSPORT` | `cli` or `api` | `cli` |
+| `AUTODJ_GEMINI_MODEL` | model ID for API mode | see `autodj_gemini.py` |
+| `GEMINI_API_KEY` / `GOOGLE_API_KEY` | API key, server-side only | unset |
+| `AUTODJ_COMFY_DIR` | ComfyUI install | launcher default |
+| `AUTODJ_COMFY_BASE` | ComfyUI base directory holding `models/` | launcher default |
+| `AUTODJ_COMFY_PORT` | renderer port | `8296` |
+| `AUTODJ_WEB_PORT` | web port | `8298` |
+| `AUTODJ_CACHE_DIR` | generated WAV cache | `/dev/shm/autodj_stable_live` |
+| `AUTODJ_AGENT_DIR` | audit log and run output | `dj_agent_runs` |
+| `AUTODJ_ENABLE_LEGACY_STUDIO` | `1` enables the older studio at `/studio` | off |
 
-| # | Agent | Module | Role |
-|---|---|---|---|
-| **1** | **`DirectorAgent`** | [`autodj_planner.py`](file:///home/prab/.gemini/antigravity/scratch/ai-auto-dj/autodj_planner.py) | Multi-objective compatibility graph $S(A,B)$, Beam Search (`K=8`) setlist planner, & `T1`–`T6` archetype selection |
-| **2** | **`ProducerAgent`** | [`autodj_producer.py`](file:///home/prab/.gemini/antigravity/scratch/ai-auto-dj/autodj_producer.py) | `ACE-Step 1.5` (1D Overlap-Add Chunked `AutoencoderOobleck`), `MusicGen-Stereo-Melody` (4D stems), & `Suno` bridge/track generation |
-| **3** | **`ListenerAgent`** | [`autodj_indexer.py`](file:///home/prab/.gemini/antigravity/scratch/ai-auto-dj/autodj_indexer.py) | 4-Stem separator, sub-ms beat/downbeat tracker, CQT Camelot key detector, & 4-Panel `1024x1024` Spectrogram renderer |
-| **4** | **`MixerAgent`** | [`autodj_mixer.py`](file:///home/prab/.gemini/antigravity/scratch/ai-auto-dj/autodj_mixer.py) | `librubberband.so.2` R3 sub-ms beatgrid warping, `T1`–`T6` 4-stem automation, Bass-Swap Law, & `-14 LUFS` / `-1.0 dBTP` mastering |
-| **5** | **`CriticAgent`** | [`autodj_critic.py`](file:///home/prab/.gemini/antigravity/scratch/ai-auto-dj/autodj_critic.py) | Stage-1 DSP + Stage-2 Perceptual Audio/Vision QA gate with self-healing `LangGraph` re-mix loop |
-| **6** | **`HostAgent`** | [`autodj_crew.py`](file:///home/prab/.gemini/antigravity/scratch/ai-auto-dj/autodj_crew.py) | Cached `Kokoro-82M` neural TTS DJ MC synthesis + Broadcast EQ + `-10 dB` mid-band sidechain ducking |
+## Tests
+
+```bash
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 .venv/bin/python -m pytest -q \
+  tests/test_demo_route.py tests/test_live_dj.py tests/test_beatmatch.py tests/test_stable_live_cues.py
+```
+
+These check routing, plan validation, queueing, beat matching, and cue detection. They do not judge
+how the music sounds.
+
+## What is and is not verified
+
+- **Playback continuity:** earlier live runs scheduled consecutive tracks without gaps and
+  replenished the queue. This is measurable from the playback timing.
+- **Music quality:** subjective and still mixed. A beat-aligned transition can still sound wrong, and
+  listening reviews of full sets have scored it well below perfect.
+- **Startup:** the first audio took roughly 45 to 106 seconds in earlier runs.
+
+## Repository layout
+
+| Path | Role |
+|---|---|
+| `autodj_server.py` | FastAPI server, listener page, live API (`/api/dj-live/...`) |
+| `autodj_live_agent.py` | live orchestration, plan validation, selection, queue |
+| `autodj_gemini.py` | Gemini transport (CLI or API) and error handling |
+| `autodj_stable_audio.py` | Stable Audio generation through ComfyUI |
+| `autodj_beatmatch.py` | beat grid estimation and tempo matching |
+| `autodj_frontend.html`, `autodj_web/` | listener page, scripts, styles, artwork |
+| `tests/` | automated tests |
+
+The remaining `autodj_*.py` modules and the older `PROJECT.md`, `AGENT_DEMO.md`, and `TEST_*.md` belong
+to the earlier studio workflow and are kept for history.
+
+## Safety
+
+- LLM output is schema-validated and reduced to a fixed set of music operations.
+- No shell commands, file paths, or network targets come from model output.
+- The planner key is read from the server's environment only. The listener page and its scripts do not reference it.
+- Actions are logged for audit. The log can contain listener requests, so it is git-ignored.
