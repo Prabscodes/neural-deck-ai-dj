@@ -533,7 +533,7 @@ def test_unified_autodj_entrypoint_and_full_gui_studio_workflows(tmp_path) -> No
     rc = autodj.main(["--cache-dir", str(tmp_path / "cli_studio"), "--check-only", "--no-browser"])
     assert rc == 0
 
-    app = create_app(cache_dir=str(tmp_path / "full_gui_studio"))
+    app = create_app(cache_dir=str(tmp_path / "full_gui_studio"), enable_legacy_studio=True)
     client = TestClient(app)
 
     # 2. Verify GUI HTML contains all DJ booth components (dual waveforms, jog wheels, Camelot SVG, FFT, stem solo)
@@ -699,7 +699,7 @@ def test_live_autonomous_dj_lookahead_and_neural_gpu_track(tmp_path: Path) -> No
     assert abs(art.duration_sec - 7.5) < 0.25
 
     # 3. Verify /api/live/start -> /api/live/status (2 continuous cycles) -> /api/live/stop
-    app = create_app(cache_dir=str(tmp_path / "live_studio"))
+    app = create_app(cache_dir=str(tmp_path / "live_studio"), enable_legacy_studio=True)
     assert hasattr(app.state, "live_controller")
     client = TestClient(app)
 

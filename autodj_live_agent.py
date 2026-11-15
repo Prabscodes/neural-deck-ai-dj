@@ -260,6 +260,9 @@ def mix_transition(tail: np.ndarray, head: np.ndarray, kind: str, requested: int
 class LiveDJ:
     MAX_PENDING=3
     LEASE_SECONDS=90
+    # Per-session caps bound planner/GPU spend on a shared deployment. Override with env vars.
+    MAX_STEERS=int(os.environ.get('AUTODJ_MAX_STEERS','25'))
+    MAX_TRACKS=int(os.environ.get('AUTODJ_MAX_TRACKS','60'))
     def __init__(self, directory: str, producer: Any, audit: Callable, gate: threading.Lock, planner: Callable | None=None, sample_rate: int=44100):
         self.root=Path(directory).resolve(); self.root.mkdir(parents=True,exist_ok=True)
         self.producer=producer;self.audit=audit;self.gate=gate;self.planner=planner;self.sr=sample_rate
@@ -292,6 +295,7 @@ class LiveDJ:
         with self.lock:
             s=self._get(sid)
             if s['stop'] or s['state'] in ('stopped','failed'): raise AgentError('Live session is not running')
+            if s['revision']>=self.MAX_STEERS: raise AgentError('Request limit reached for this session. Start a new session to keep steering.')
             s['request']=request;s['revision']+=1;s['lease']=time.monotonic()
             self.audit(sid,'steer','accepted',{'request':request,'revision':s['revision']})
     def stop(self,sid: str) -> None:
@@ -332,6 +336,8 @@ class LiveDJ:
                     if s['stop']:break
                     if time.monotonic()-s['lease']>self.LEASE_SECONDS:
                         s['stop']=True;self.audit(sid,'live','stopped',{'reason':'client timed out'});break
+                    if s['next_seq']>=self.MAX_TRACKS:
+                        s['stop']=True;self.audit(sid,'live','stopped',{'reason':'track limit reached'});break
                     full=len(s['segments'])>=self.MAX_PENDING
                     if not full:
                         direction=s['request'];revision=s['revision'];model=s['model'];neural=s['neural'];s['state']='planning'

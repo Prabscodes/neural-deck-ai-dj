@@ -75,7 +75,9 @@ and `AUTODJ_COMFY_BASE`. Always set both on another machine.
 | `AUTODJ_WEB_PORT` | web port | `8298` |
 | `AUTODJ_CACHE_DIR` | generated WAV cache | `/dev/shm/autodj_stable_live` |
 | `AUTODJ_AGENT_DIR` | audit log and run output | `dj_agent_runs` |
-| `AUTODJ_ENABLE_LEGACY_STUDIO` | `1` enables the older studio at `/studio` | off |
+| `AUTODJ_ENABLE_LEGACY_STUDIO` | `1` enables the older studio at `/studio` and its `/api/*` routes | off |
+| `AUTODJ_MAX_STEERS` | max follow-up requests per session | `25` |
+| `AUTODJ_MAX_TRACKS` | max tracks per session before it stops | `60` |
 
 ## Tests
 
@@ -114,5 +116,8 @@ to the earlier studio workflow and are kept for history.
 
 - LLM output is schema-validated and reduced to a fixed set of music operations.
 - No shell commands, file paths, or network targets come from model output.
+- Only `/api/dj-live/*` and `/api/dj-agent/*` are served by default. The older studio routes (library scan, host drop, and others, which take server paths) return 404 unless `AUTODJ_ENABLE_LEGACY_STUDIO=1`.
+- Each session is capped on follow-up requests and total tracks. API calls retry 429 and transient 5xx errors up to three attempts with capped backoff.
+- Confirmation prompts are not used: the live path performs no destructive operations. It only deletes its own temporary WAV files.
 - The planner key is read from the server's environment only. The listener page and its scripts do not reference it.
 - Actions are logged for audit. The log can contain listener requests, so it is git-ignored.

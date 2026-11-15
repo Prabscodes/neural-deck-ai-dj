@@ -2849,6 +2849,11 @@ def create_app(cache_dir: str = "/dev/shm/autodj_studio", *, enable_legacy_studi
 
     @app.middleware("http")
     async def serialize_legacy_actions(request, call_next):
+        # Only the prompt-first agent is public. Studio routes (library scan, host drop, ...)
+        # take server paths and shell-adjacent input, so they exist only when the studio is enabled.
+        if not enable_legacy_studio and request.url.path.startswith("/api/") and not request.url.path.startswith(("/api/dj-live/", "/api/dj-agent/")):
+            from fastapi.responses import JSONResponse
+            return JSONResponse(status_code=404, content={"detail": "Not found"})
         # The studio and the prompt-first agent share producer/GPU state.
         if request.method == "POST" and request.url.path.startswith("/api/") and not request.url.path.startswith(("/api/dj-live/", "/api/dj-agent/")):
             from fastapi.responses import JSONResponse
@@ -4314,6 +4319,9 @@ def create_app(cache_dir: str = "/dev/shm/autodj_studio", *, enable_legacy_studi
 
     @app.websocket("/ws/telemetry")
     async def ws_telemetry(ws: WebSocket) -> None:
+        if not enable_legacy_studio:
+            await ws.close(code=1008)
+            return
         await ws.accept()
         loop = asyncio.get_running_loop()
         client_pair = (ws, loop)

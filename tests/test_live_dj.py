@@ -80,7 +80,7 @@ def test_http_stream_routes_and_shared_exclusion(tmp_path, monkeypatch):
     monkeypatch.setenv('GEMINI_API_KEY','test-key')
     monkeypatch.setattr(torch.cuda,'is_available',lambda:False)
     from autodj_server import create_app
-    app=create_app(cache_dir=str(tmp_path/'studio'))
+    app=create_app(cache_dir=str(tmp_path/'studio'),enable_legacy_studio=True)
     dj=app.state.llm_live_dj;dj.producer=Producer(sr=44100);dj.planner=lambda *args:BASE
     client=TestClient(app)
     response=client.post('/api/dj-live/start',json={'request':'mellow music'})

@@ -7,6 +7,7 @@ import os
 import re
 import shutil
 import subprocess
+import time
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from urllib.error import HTTPError, URLError
@@ -67,6 +68,31 @@ def generate_text(
     return _generate_api(model, system, message, audio_wav, schema, timeout)
 
 
+RETRYABLE_STATUS = {429, 500, 503}
+MAX_ATTEMPTS = 3
+MAX_BACKOFF_SECONDS = 8.0
+
+
+def _post_with_retry(req: Request, timeout: float, sleep=time.sleep) -> dict:
+    """POST once, retrying rate-limit and transient server errors with capped backoff.
+
+    Honors a numeric Retry-After header. Other errors, and the last failure, are re-raised.
+    """
+    for attempt in range(MAX_ATTEMPTS):
+        try:
+            with urlopen(req, timeout=timeout) as response:
+                return json.load(response)
+        except HTTPError as exc:
+            if exc.code not in RETRYABLE_STATUS or attempt == MAX_ATTEMPTS - 1:
+                raise
+            try:
+                wait = float(exc.headers.get("Retry-After", "")) if exc.headers else 0.0
+            except ValueError:
+                wait = 0.0
+            sleep(min(MAX_BACKOFF_SECONDS, wait if wait > 0 else 2.0 ** attempt))
+    raise AssertionError("unreachable")
+
+
 def _generate_api(model, system, message, audio_wav, schema, timeout) -> str:
     key = require_api_key()
     parts = [{"text": message}]
@@ -90,8 +116,7 @@ def _generate_api(model, system, message, audio_wav, schema, timeout) -> str:
         headers={"Content-Type": "application/json", "x-goog-api-key": key},
     )
     try:
-        with urlopen(req, timeout=timeout) as response:
-            result = json.load(response)
+        result = _post_with_retry(req, timeout)
     except HTTPError as exc:
         hint = {
             400: "Check the request parameters and model capabilities.",
