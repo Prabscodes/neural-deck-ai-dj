@@ -66,7 +66,8 @@ def create_public_app(agent_dir: str | None = None, *, starts_per_hour: int | No
     app.mount("/deck-assets", StaticFiles(directory=HERE / "autodj_web"), name="deck-assets")
     runner = AgentRunner(agent_dir or os.environ.get("AUTODJ_AGENT_DIR", str(HERE / "dj_agent_runs")), None)
     live_dj = LiveDJ(str(runner.root / "live"), None, runner.log, threading.Lock())
-    live_dj.music_backend = "bank"  # always the library: there is no GPU or renderer here
+    # No GPU here: the library alone, or live Lyria generation (OpenRouter key set) with the library as fallback.
+    live_dj.music_backend = "hybrid" if os.environ.get("OPENROUTER_API_KEY", "").strip() else "bank"
     live_dj.MAX_SESSIONS = int(os.environ.get("AUTODJ_MAX_SESSIONS", "3"))
     app.state.live_dj = live_dj
     limiter = StartLimiter(starts_per_hour or int(os.environ.get("AUTODJ_MAX_STARTS_PER_HOUR", "6")))

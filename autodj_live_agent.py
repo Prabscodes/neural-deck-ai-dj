@@ -18,6 +18,7 @@ from autodj_agent import AgentError
 from autodj_gemini import GeminiError, generate_text
 from autodj_stable_audio import BACKEND as STABLE_BACKEND, StableAudio, StableAudioError, prepare_deck
 from autodj_bank import BankAudio, BACKEND as BANK_BACKEND
+from autodj_remote import HybridAudio
 
 LIVE_SYSTEM = '''You are an instrumental DJ. Choose the NEXT track and the transition from the previous track in response to the listener. Return ONLY a JSON object with exactly these fields: title (1-80 chars), style (1-300 chars, detailed instrumental music prompt), bpm (integer 70-180), camelot (1A through 12B), bars (8 or 16; prefer 16 to buffer ahead), backend (neural or synth), transition (cut, linear or equal_power), overlap_seconds (0.5, 1, 2 or 3). Choose neural when available; synth is a basic procedural electronic synthesizer that cannot follow genres. Prefer equal_power transitions for music unless the listener explicitly asks for cuts. For adjacent tracks in the same style, keep a compatible key and avoid simultaneous busy hooks at the transition. For the first track, transition fields are ignored. Plan a coherent next song and a transition responsive to the listener's request. Never return file paths or commands.'''
 
@@ -340,12 +341,12 @@ class LiveDJ:
         previous_audio = None
         outgoing_phrase = None
         music = (self.music_backend or os.environ.get('AUTODJ_MUSIC_BACKEND', '')).lower()
-        stable = music in ('stable_audio', 'bank')
+        stable = music in ('stable_audio', 'bank', 'hybrid')
         renderer = None
         recent = []
         try:
             if stable:
-                renderer = BankAudio(self.sr) if music == 'bank' else StableAudio(self.sr)
+                renderer = {'bank': BankAudio, 'hybrid': HybridAudio}.get(music, StableAudio)(self.sr)
             while True:
                 with self.lock:
                     s=self._get(sid)
@@ -366,7 +367,7 @@ class LiveDJ:
                 })
                 if self.planner is None:
                     options = {"stable": True} if stable else {}
-                    if music == 'bank':options["catalog"] = renderer.catalog_text()
+                    if music in ('bank', 'hybrid'):options["catalog"] = renderer.catalog_text()
                     if stable and previous is not None:
                         context = {**previous, "recent_titles": recent[-3:],
                                    "measured_outgoing_bpm": round(tail_grid.bpm, 2) if tail_grid else None}
@@ -396,7 +397,9 @@ class LiveDJ:
                 handoff = None
                 if renderer is not None:
                     t_render=time.monotonic();decks = []
-                    for attempts in range(1, 4):
+                    takes = getattr(renderer, 'takes', 3)  # a paid generator makes one take per slot
+                    rescue = getattr(renderer, 'rescue', None)
+                    for attempts in range(1, takes + 1):
                         try:
                             candidate = prepare_deck(
                                 renderer.render(plan, seq + 84 + 1009 * (attempts - 1), lambda: s['stop']),
@@ -405,7 +408,7 @@ class LiveDJ:
                             if s['stop']:
                                 break
                             self.audit(sid, 'live_generate', 'rejected', {'seq': seq, 'reason': str(exc)})
-                            if attempts == 3 and not decks:
+                            if attempts == takes and not decks and rescue is None:
                                 raise
                             continue
                         if tail_grid is not None and candidate.opening is not None:
@@ -415,6 +418,9 @@ class LiveDJ:
                         decks.append(candidate)
                     if s['stop']:
                         break
+                    if not decks and rescue is not None:  # the generated take was unplayable: use the bank
+                        decks.append(prepare_deck(rescue(plan, seq + 84, lambda: s['stop']), self.sr, plan['bpm'],
+                                                  incoming=tail is not None))
                     if not decks:
                         raise StableAudioError('No playable audio was generated')
                     render_seconds=time.monotonic()-t_render;t_handoff=time.monotonic()
@@ -445,7 +451,7 @@ class LiveDJ:
                     handoff = handoffs[selected] if handoffs is not None else None
                     self.audit(sid, 'live_listen', listening['state'], {'seq': seq, **listening})
                     wave, grid, trimmed_silence = deck.wave, deck.opening, deck.trimmed
-                    backend, arranged, arrangement_profile = (BANK_BACKEND if music == 'bank' else STABLE_BACKEND), False, None
+                    backend, arranged, arrangement_profile = (getattr(renderer, 'last_backend', None) or (BANK_BACKEND if music == 'bank' else STABLE_BACKEND)), False, None
                 else:
                     candidates=[]
                     max_attempts=2 if os.environ.get('AUTODJ_MUSIC_BACKEND', '').lower() == 'ace_step' else 1

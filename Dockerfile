@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg \
 WORKDIR /app
 COPY requirements-public.txt .
 RUN pip install --no-cache-dir -r requirements-public.txt
-COPY autodj_public.py autodj_live_agent.py autodj_agent.py autodj_gemini.py autodj_bank.py \
+COPY autodj_public.py autodj_live_agent.py autodj_agent.py autodj_gemini.py autodj_bank.py autodj_remote.py \
      autodj_stable_audio.py autodj_beatmatch.py autodj_frontend.html ./
 COPY autodj_web ./autodj_web
 COPY bank ./bank
