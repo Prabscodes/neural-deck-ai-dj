@@ -7,5 +7,4 @@ dj_agent_runs/
 docs/handoffs/
 *.wav
 .env
-bank/
 demo-video/

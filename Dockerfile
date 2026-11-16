@@ -1,5 +1,5 @@
 # Public Neural Deck: pre-rendered bank + live Gemini planner. No GPU, no torch.
-# Build context needs a bank/ folder (python tools/build_bank.py).
+# Build context needs the bank/ folder (committed; rebuild with python tools/build_bank.py).
 FROM python:3.11-slim
 RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg \
     && rm -rf /var/lib/apt/lists/*

@@ -87,7 +87,7 @@ bank of tracks pre-rendered offline with Stable Audio. The Gemini planner still 
 track and its plan is validated as usual.
 
 ```bash
-# once, on a machine with the renderer running (a GPU):
+# the bank is committed in bank/; rebuild it only to change styles, on a machine with the renderer running (a GPU):
 .venv/bin/python tools/build_bank.py --out bank      # 48 tracks, about 52 MB
 
 # on the public host:

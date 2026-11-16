@@ -1,0 +1,730 @@
+{
+ "tracks": [
+  {
+   "id": "dubstep-piano-8a-1",
+   "file": "dubstep-piano-8a-1.ogg",
+   "style": "Heavy melodic dubstep with a grand piano hook and growl bass",
+   "tags": [
+    "dubstep",
+    "piano",
+    "growl",
+    "bass"
+   ],
+   "bpm": 140,
+   "camelot": "8A",
+   "seed": 5000,
+   "seconds": 75.0
+  },
+  {
+   "id": "dubstep-piano-8a-2",
+   "file": "dubstep-piano-8a-2.ogg",
+   "style": "Heavy melodic dubstep with a grand piano hook and growl bass",
+   "tags": [
+    "dubstep",
+    "piano",
+    "growl",
+    "bass"
+   ],
+   "bpm": 140,
+   "camelot": "8A",
+   "seed": 5097,
+   "seconds": 75.0
+  },
+  {
+   "id": "dubstep-piano-10a-1",
+   "file": "dubstep-piano-10a-1.ogg",
+   "style": "Heavy melodic dubstep with a grand piano hook and growl bass",
+   "tags": [
+    "dubstep",
+    "piano",
+    "growl",
+    "bass"
+   ],
+   "bpm": 140,
+   "camelot": "10A",
+   "seed": 5194,
+   "seconds": 75.0
+  },
+  {
+   "id": "dubstep-piano-10a-2",
+   "file": "dubstep-piano-10a-2.ogg",
+   "style": "Heavy melodic dubstep with a grand piano hook and growl bass",
+   "tags": [
+    "dubstep",
+    "piano",
+    "growl",
+    "bass"
+   ],
+   "bpm": 140,
+   "camelot": "10A",
+   "seed": 5291,
+   "seconds": 75.0
+  },
+  {
+   "id": "dubstep-piano-5a-1",
+   "file": "dubstep-piano-5a-1.ogg",
+   "style": "Heavy melodic dubstep with a grand piano hook and growl bass",
+   "tags": [
+    "dubstep",
+    "piano",
+    "growl",
+    "bass"
+   ],
+   "bpm": 140,
+   "camelot": "5A",
+   "seed": 5388,
+   "seconds": 75.0
+  },
+  {
+   "id": "dubstep-piano-5a-2",
+   "file": "dubstep-piano-5a-2.ogg",
+   "style": "Heavy melodic dubstep with a grand piano hook and growl bass",
+   "tags": [
+    "dubstep",
+    "piano",
+    "growl",
+    "bass"
+   ],
+   "bpm": 140,
+   "camelot": "5A",
+   "seed": 5485,
+   "seconds": 75.0
+  },
+  {
+   "id": "deep-house-8a-1",
+   "file": "deep-house-8a-1.ogg",
+   "style": "Deep house with warm Rhodes chords, round sub bass and shuffled hi-hats",
+   "tags": [
+    "house",
+    "deep house",
+    "rhodes",
+    "chords"
+   ],
+   "bpm": 124,
+   "camelot": "8A",
+   "seed": 5582,
+   "seconds": 75.0
+  },
+  {
+   "id": "deep-house-8a-2",
+   "file": "deep-house-8a-2.ogg",
+   "style": "Deep house with warm Rhodes chords, round sub bass and shuffled hi-hats",
+   "tags": [
+    "house",
+    "deep house",
+    "rhodes",
+    "chords"
+   ],
+   "bpm": 124,
+   "camelot": "8A",
+   "seed": 5679,
+   "seconds": 75.0
+  },
+  {
+   "id": "deep-house-9a-1",
+   "file": "deep-house-9a-1.ogg",
+   "style": "Deep house with warm Rhodes chords, round sub bass and shuffled hi-hats",
+   "tags": [
+    "house",
+    "deep house",
+    "rhodes",
+    "chords"
+   ],
+   "bpm": 124,
+   "camelot": "9A",
+   "seed": 5776,
+   "seconds": 75.0
+  },
+  {
+   "id": "deep-house-9a-2",
+   "file": "deep-house-9a-2.ogg",
+   "style": "Deep house with warm Rhodes chords, round sub bass and shuffled hi-hats",
+   "tags": [
+    "house",
+    "deep house",
+    "rhodes",
+    "chords"
+   ],
+   "bpm": 124,
+   "camelot": "9A",
+   "seed": 5873,
+   "seconds": 75.0
+  },
+  {
+   "id": "deep-house-6a-1",
+   "file": "deep-house-6a-1.ogg",
+   "style": "Deep house with warm Rhodes chords, round sub bass and shuffled hi-hats",
+   "tags": [
+    "house",
+    "deep house",
+    "rhodes",
+    "chords"
+   ],
+   "bpm": 124,
+   "camelot": "6A",
+   "seed": 5970,
+   "seconds": 75.0
+  },
+  {
+   "id": "deep-house-6a-2",
+   "file": "deep-house-6a-2.ogg",
+   "style": "Deep house with warm Rhodes chords, round sub bass and shuffled hi-hats",
+   "tags": [
+    "house",
+    "deep house",
+    "rhodes",
+    "chords"
+   ],
+   "bpm": 124,
+   "camelot": "6A",
+   "seed": 6067,
+   "seconds": 75.0
+  },
+  {
+   "id": "melodic-techno-7a-1",
+   "file": "melodic-techno-7a-1.ogg",
+   "style": "Melodic techno with a hypnotic arpeggio, driving kick and rumbling bass",
+   "tags": [
+    "techno",
+    "melodic",
+    "arpeggio",
+    "driving"
+   ],
+   "bpm": 126,
+   "camelot": "7A",
+   "seed": 6164,
+   "seconds": 75.0
+  },
+  {
+   "id": "melodic-techno-7a-2",
+   "file": "melodic-techno-7a-2.ogg",
+   "style": "Melodic techno with a hypnotic arpeggio, driving kick and rumbling bass",
+   "tags": [
+    "techno",
+    "melodic",
+    "arpeggio",
+    "driving"
+   ],
+   "bpm": 126,
+   "camelot": "7A",
+   "seed": 6261,
+   "seconds": 75.0
+  },
+  {
+   "id": "melodic-techno-9a-1",
+   "file": "melodic-techno-9a-1.ogg",
+   "style": "Melodic techno with a hypnotic arpeggio, driving kick and rumbling bass",
+   "tags": [
+    "techno",
+    "melodic",
+    "arpeggio",
+    "driving"
+   ],
+   "bpm": 126,
+   "camelot": "9A",
+   "seed": 6358,
+   "seconds": 75.0
+  },
+  {
+   "id": "melodic-techno-9a-2",
+   "file": "melodic-techno-9a-2.ogg",
+   "style": "Melodic techno with a hypnotic arpeggio, driving kick and rumbling bass",
+   "tags": [
+    "techno",
+    "melodic",
+    "arpeggio",
+    "driving"
+   ],
+   "bpm": 126,
+   "camelot": "9A",
+   "seed": 6455,
+   "seconds": 75.0
+  },
+  {
+   "id": "melodic-techno-11a-1",
+   "file": "melodic-techno-11a-1.ogg",
+   "style": "Melodic techno with a hypnotic arpeggio, driving kick and rumbling bass",
+   "tags": [
+    "techno",
+    "melodic",
+    "arpeggio",
+    "driving"
+   ],
+   "bpm": 126,
+   "camelot": "11A",
+   "seed": 6552,
+   "seconds": 75.0
+  },
+  {
+   "id": "melodic-techno-11a-2",
+   "file": "melodic-techno-11a-2.ogg",
+   "style": "Melodic techno with a hypnotic arpeggio, driving kick and rumbling bass",
+   "tags": [
+    "techno",
+    "melodic",
+    "arpeggio",
+    "driving"
+   ],
+   "bpm": 126,
+   "camelot": "11A",
+   "seed": 6649,
+   "seconds": 75.0
+  },
+  {
+   "id": "drum-and-bass-8a-1",
+   "file": "drum-and-bass-8a-1.ogg",
+   "style": "Liquid drum and bass with atmospheric pads, fast breakbeat and rolling sub",
+   "tags": [
+    "drum and bass",
+    "dnb",
+    "breakbeat",
+    "pads"
+   ],
+   "bpm": 174,
+   "camelot": "8A",
+   "seed": 6746,
+   "seconds": 75.0
+  },
+  {
+   "id": "drum-and-bass-8a-2",
+   "file": "drum-and-bass-8a-2.ogg",
+   "style": "Liquid drum and bass with atmospheric pads, fast breakbeat and rolling sub",
+   "tags": [
+    "drum and bass",
+    "dnb",
+    "breakbeat",
+    "pads"
+   ],
+   "bpm": 174,
+   "camelot": "8A",
+   "seed": 6843,
+   "seconds": 75.0
+  },
+  {
+   "id": "drum-and-bass-10a-1",
+   "file": "drum-and-bass-10a-1.ogg",
+   "style": "Liquid drum and bass with atmospheric pads, fast breakbeat and rolling sub",
+   "tags": [
+    "drum and bass",
+    "dnb",
+    "breakbeat",
+    "pads"
+   ],
+   "bpm": 174,
+   "camelot": "10A",
+   "seed": 6940,
+   "seconds": 75.0
+  },
+  {
+   "id": "drum-and-bass-10a-2",
+   "file": "drum-and-bass-10a-2.ogg",
+   "style": "Liquid drum and bass with atmospheric pads, fast breakbeat and rolling sub",
+   "tags": [
+    "drum and bass",
+    "dnb",
+    "breakbeat",
+    "pads"
+   ],
+   "bpm": 174,
+   "camelot": "10A",
+   "seed": 7037,
+   "seconds": 75.0
+  },
+  {
+   "id": "drum-and-bass-6a-1",
+   "file": "drum-and-bass-6a-1.ogg",
+   "style": "Liquid drum and bass with atmospheric pads, fast breakbeat and rolling sub",
+   "tags": [
+    "drum and bass",
+    "dnb",
+    "breakbeat",
+    "pads"
+   ],
+   "bpm": 174,
+   "camelot": "6A",
+   "seed": 7134,
+   "seconds": 75.0
+  },
+  {
+   "id": "drum-and-bass-6a-2",
+   "file": "drum-and-bass-6a-2.ogg",
+   "style": "Liquid drum and bass with atmospheric pads, fast breakbeat and rolling sub",
+   "tags": [
+    "drum and bass",
+    "dnb",
+    "breakbeat",
+    "pads"
+   ],
+   "bpm": 174,
+   "camelot": "6A",
+   "seed": 7231,
+   "seconds": 75.0
+  },
+  {
+   "id": "future-bass-8b-1",
+   "file": "future-bass-8b-1.ogg",
+   "style": "Future bass with bright detuned supersaw chords, snappy snare and wide bass",
+   "tags": [
+    "future bass",
+    "supersaw",
+    "bright",
+    "chords"
+   ],
+   "bpm": 150,
+   "camelot": "8B",
+   "seed": 7328,
+   "seconds": 75.0
+  },
+  {
+   "id": "future-bass-8b-2",
+   "file": "future-bass-8b-2.ogg",
+   "style": "Future bass with bright detuned supersaw chords, snappy snare and wide bass",
+   "tags": [
+    "future bass",
+    "supersaw",
+    "bright",
+    "chords"
+   ],
+   "bpm": 150,
+   "camelot": "8B",
+   "seed": 7425,
+   "seconds": 75.0
+  },
+  {
+   "id": "future-bass-10b-1",
+   "file": "future-bass-10b-1.ogg",
+   "style": "Future bass with bright detuned supersaw chords, snappy snare and wide bass",
+   "tags": [
+    "future bass",
+    "supersaw",
+    "bright",
+    "chords"
+   ],
+   "bpm": 150,
+   "camelot": "10B",
+   "seed": 7522,
+   "seconds": 75.0
+  },
+  {
+   "id": "future-bass-10b-2",
+   "file": "future-bass-10b-2.ogg",
+   "style": "Future bass with bright detuned supersaw chords, snappy snare and wide bass",
+   "tags": [
+    "future bass",
+    "supersaw",
+    "bright",
+    "chords"
+   ],
+   "bpm": 150,
+   "camelot": "10B",
+   "seed": 7619,
+   "seconds": 75.0
+  },
+  {
+   "id": "future-bass-11b-1",
+   "file": "future-bass-11b-1.ogg",
+   "style": "Future bass with bright detuned supersaw chords, snappy snare and wide bass",
+   "tags": [
+    "future bass",
+    "supersaw",
+    "bright",
+    "chords"
+   ],
+   "bpm": 150,
+   "camelot": "11B",
+   "seed": 7716,
+   "seconds": 75.0
+  },
+  {
+   "id": "future-bass-11b-2",
+   "file": "future-bass-11b-2.ogg",
+   "style": "Future bass with bright detuned supersaw chords, snappy snare and wide bass",
+   "tags": [
+    "future bass",
+    "supersaw",
+    "bright",
+    "chords"
+   ],
+   "bpm": 150,
+   "camelot": "11B",
+   "seed": 7813,
+   "seconds": 75.0
+  },
+  {
+   "id": "trap-5a-1",
+   "file": "trap-5a-1.ogg",
+   "style": "Hard trap beat with deep 808 bass, rolling hi-hats and a dark bell melody",
+   "tags": [
+    "trap",
+    "808",
+    "hi-hats",
+    "bell"
+   ],
+   "bpm": 140,
+   "camelot": "5A",
+   "seed": 7910,
+   "seconds": 75.0
+  },
+  {
+   "id": "trap-5a-2",
+   "file": "trap-5a-2.ogg",
+   "style": "Hard trap beat with deep 808 bass, rolling hi-hats and a dark bell melody",
+   "tags": [
+    "trap",
+    "808",
+    "hi-hats",
+    "bell"
+   ],
+   "bpm": 140,
+   "camelot": "5A",
+   "seed": 8007,
+   "seconds": 75.0
+  },
+  {
+   "id": "trap-7a-1",
+   "file": "trap-7a-1.ogg",
+   "style": "Hard trap beat with deep 808 bass, rolling hi-hats and a dark bell melody",
+   "tags": [
+    "trap",
+    "808",
+    "hi-hats",
+    "bell"
+   ],
+   "bpm": 140,
+   "camelot": "7A",
+   "seed": 8104,
+   "seconds": 75.0
+  },
+  {
+   "id": "trap-7a-2",
+   "file": "trap-7a-2.ogg",
+   "style": "Hard trap beat with deep 808 bass, rolling hi-hats and a dark bell melody",
+   "tags": [
+    "trap",
+    "808",
+    "hi-hats",
+    "bell"
+   ],
+   "bpm": 140,
+   "camelot": "7A",
+   "seed": 8201,
+   "seconds": 75.0
+  },
+  {
+   "id": "trap-8a-1",
+   "file": "trap-8a-1.ogg",
+   "style": "Hard trap beat with deep 808 bass, rolling hi-hats and a dark bell melody",
+   "tags": [
+    "trap",
+    "808",
+    "hi-hats",
+    "bell"
+   ],
+   "bpm": 140,
+   "camelot": "8A",
+   "seed": 8298,
+   "seconds": 75.0
+  },
+  {
+   "id": "trap-8a-2",
+   "file": "trap-8a-2.ogg",
+   "style": "Hard trap beat with deep 808 bass, rolling hi-hats and a dark bell melody",
+   "tags": [
+    "trap",
+    "808",
+    "hi-hats",
+    "bell"
+   ],
+   "bpm": 140,
+   "camelot": "8A",
+   "seed": 8395,
+   "seconds": 75.0
+  },
+  {
+   "id": "trance-8a-1",
+   "file": "trance-8a-1.ogg",
+   "style": "Uplifting trance with a plucked lead, rolling bassline and big breakdown",
+   "tags": [
+    "trance",
+    "uplifting",
+    "pluck",
+    "lead"
+   ],
+   "bpm": 138,
+   "camelot": "8A",
+   "seed": 8492,
+   "seconds": 75.0
+  },
+  {
+   "id": "trance-8a-2",
+   "file": "trance-8a-2.ogg",
+   "style": "Uplifting trance with a plucked lead, rolling bassline and big breakdown",
+   "tags": [
+    "trance",
+    "uplifting",
+    "pluck",
+    "lead"
+   ],
+   "bpm": 138,
+   "camelot": "8A",
+   "seed": 8589,
+   "seconds": 75.0
+  },
+  {
+   "id": "trance-10a-1",
+   "file": "trance-10a-1.ogg",
+   "style": "Uplifting trance with a plucked lead, rolling bassline and big breakdown",
+   "tags": [
+    "trance",
+    "uplifting",
+    "pluck",
+    "lead"
+   ],
+   "bpm": 138,
+   "camelot": "10A",
+   "seed": 8686,
+   "seconds": 75.0
+  },
+  {
+   "id": "trance-10a-2",
+   "file": "trance-10a-2.ogg",
+   "style": "Uplifting trance with a plucked lead, rolling bassline and big breakdown",
+   "tags": [
+    "trance",
+    "uplifting",
+    "pluck",
+    "lead"
+   ],
+   "bpm": 138,
+   "camelot": "10A",
+   "seed": 8783,
+   "seconds": 75.0
+  },
+  {
+   "id": "trance-9b-1",
+   "file": "trance-9b-1.ogg",
+   "style": "Uplifting trance with a plucked lead, rolling bassline and big breakdown",
+   "tags": [
+    "trance",
+    "uplifting",
+    "pluck",
+    "lead"
+   ],
+   "bpm": 138,
+   "camelot": "9B",
+   "seed": 8880,
+   "seconds": 75.0
+  },
+  {
+   "id": "trance-9b-2",
+   "file": "trance-9b-2.ogg",
+   "style": "Uplifting trance with a plucked lead, rolling bassline and big breakdown",
+   "tags": [
+    "trance",
+    "uplifting",
+    "pluck",
+    "lead"
+   ],
+   "bpm": 138,
+   "camelot": "9B",
+   "seed": 8977,
+   "seconds": 75.0
+  },
+  {
+   "id": "lofi-piano-8a-1",
+   "file": "lofi-piano-8a-1.ogg",
+   "style": "Mellow lo-fi hip hop with soft piano chords, dusty drums and warm bass",
+   "tags": [
+    "lo-fi",
+    "lofi",
+    "chill",
+    "mellow",
+    "piano"
+   ],
+   "bpm": 85,
+   "camelot": "8A",
+   "seed": 9074,
+   "seconds": 75.0
+  },
+  {
+   "id": "lofi-piano-8a-2",
+   "file": "lofi-piano-8a-2.ogg",
+   "style": "Mellow lo-fi hip hop with soft piano chords, dusty drums and warm bass",
+   "tags": [
+    "lo-fi",
+    "lofi",
+    "chill",
+    "mellow",
+    "piano"
+   ],
+   "bpm": 85,
+   "camelot": "8A",
+   "seed": 9171,
+   "seconds": 75.0
+  },
+  {
+   "id": "lofi-piano-5a-1",
+   "file": "lofi-piano-5a-1.ogg",
+   "style": "Mellow lo-fi hip hop with soft piano chords, dusty drums and warm bass",
+   "tags": [
+    "lo-fi",
+    "lofi",
+    "chill",
+    "mellow",
+    "piano"
+   ],
+   "bpm": 85,
+   "camelot": "5A",
+   "seed": 9268,
+   "seconds": 75.0
+  },
+  {
+   "id": "lofi-piano-5a-2",
+   "file": "lofi-piano-5a-2.ogg",
+   "style": "Mellow lo-fi hip hop with soft piano chords, dusty drums and warm bass",
+   "tags": [
+    "lo-fi",
+    "lofi",
+    "chill",
+    "mellow",
+    "piano"
+   ],
+   "bpm": 85,
+   "camelot": "5A",
+   "seed": 9365,
+   "seconds": 75.0
+  },
+  {
+   "id": "lofi-piano-10b-1",
+   "file": "lofi-piano-10b-1.ogg",
+   "style": "Mellow lo-fi hip hop with soft piano chords, dusty drums and warm bass",
+   "tags": [
+    "lo-fi",
+    "lofi",
+    "chill",
+    "mellow",
+    "piano"
+   ],
+   "bpm": 85,
+   "camelot": "10B",
+   "seed": 9462,
+   "seconds": 75.0
+  },
+  {
+   "id": "lofi-piano-10b-2",
+   "file": "lofi-piano-10b-2.ogg",
+   "style": "Mellow lo-fi hip hop with soft piano chords, dusty drums and warm bass",
+   "tags": [
+    "lo-fi",
+    "lofi",
+    "chill",
+    "mellow",
+    "piano"
+   ],
+   "bpm": 85,
+   "camelot": "10B",
+   "seed": 9559,
+   "seconds": 75.0
+  }
+ ]
+}
