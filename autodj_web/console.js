@@ -198,11 +198,6 @@ function drawSpectrum(session, force = false) {
 new ResizeObserver(fitSpectrum).observe(canvas);
 reducedMotion.addEventListener("change", () => drawSpectrum(live, true));
 
-function clockLabel(seconds) {
-  const round = Math.max(0, Math.floor(seconds));
-  return `${Math.floor(round / 60)}:${String(round % 60).padStart(2, "0")}`;
-}
-
 function updateTransport(session) {
   const now = session.context.currentTime;
   const current = session.schedule.find(item => now >= item.at && now < item.at + item.duration);
@@ -214,12 +209,6 @@ function updateTransport(session) {
   }
   setText(find("output-heading"), current?.segment.title
     || (session.started ? "Getting the next track ready" : "Getting your mix ready"));
-  find("live-progress").hidden = !current;
-  if (current) {
-    find("playhead").value = Math.min(1, (now - current.at) / current.duration);
-    setText(find("elapsed"), clockLabel(now - current.at));
-    setText(find("duration"), clockLabel(current.duration));
-  }
   pauseButton.disabled = !session.started && !paused;
   setText(pauseButton, paused ? "Resume" : "Pause");
   if (paused) indicator("paused", "Paused");
@@ -262,7 +251,6 @@ function clearLivePlayer() {
   }
   session.context.close().catch(() => {});
   syncControls();
-  find("live-progress").hidden = true;
   find("next-section").hidden = true;
   find("tracks").replaceChildren();
   setText(find("output-heading"), "Your mix starts here");

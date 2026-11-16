@@ -205,10 +205,6 @@ textarea:focus { border-color: #8fd5d1; box-shadow: 0 0 0 3px #90dfdf20; }
 .scope[data-state="preparing"]::after { animation: scan 3.4s ease-out infinite; }
 .scope[data-state="playing"] { border-color: #527d89; }
 .scope[data-state="paused"]::before { opacity: .18; }
-.progress { display: flex; gap: 9px; align-items: center; margin: 10px 0 9px; color: var(--muted); font: .68rem var(--mono); }
-.progress progress { width: 100%; min-width: 0; height: 4px; border: 0; accent-color: var(--aqua); }
-.progress progress::-webkit-progress-bar { background: #444b60; border-radius: 4px; }
-.progress progress::-webkit-progress-value { background: var(--aqua); border-radius: 4px; }
 .transport, .controls, .volume { display: flex; align-items: center; gap: 6px; }
 .transport { justify-content: space-between; }
 .icon-button { background: transparent; border: 1px solid transparent; border-radius: 9px; color: #d6e1ee; width: 39px; height: 39px; display: grid; place-items: center; }
