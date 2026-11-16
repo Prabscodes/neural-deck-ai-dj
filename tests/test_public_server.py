@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
+import autodj_live_agent as live_agent
 from autodj_agent import AgentError
 from autodj_live_agent import LiveDJ
 from autodj_public import StartLimiter, create_public_app
@@ -98,11 +99,13 @@ def test_public_start_needs_planner_key(public, monkeypatch):
 def test_real_bank_session_plays_and_hands_off(tmp_path, monkeypatch):
     monkeypatch.setenv("AUTODJ_BANK_DIR", str(REAL_BANK))
     monkeypatch.setenv("AUTODJ_LISTENING", "off")
-    records = []
+    records, plans, handoffs = [], [], []
+    real_handoff = live_agent.prepare_handoff
+    monkeypatch.setattr(live_agent, "prepare_handoff", lambda *a: handoffs.append(1) or real_handoff(*a))
     plan = {**BASE, "bars": 16, "style": "Heavy melodic dubstep with a grand piano hook", "bpm": 140,
             "camelot": "8A", "overlap_seconds": 2, "transition": "equal_power"}
     dj = LiveDJ(str(tmp_path), None, lambda *e: records.append(e), threading.Lock(),
-                planner=lambda *a: plan, sample_rate=44100)
+                planner=lambda *a: plans.append(1) or plan, sample_rate=44100)
     dj.MAX_SESSIONS = 2
     dj.music_backend = "bank"
     sid = dj.start("dubstep with piano", "test", True)["session_id"]
@@ -113,3 +116,5 @@ def test_real_bank_session_plays_and_hands_off(tmp_path, monkeypatch):
     assert dj.segment_path(sid, 0).is_file()
     dj.stop(sid)
     wait_for(lambda: dj.status(sid)["state"] == "stopped", timeout=15)
+    # Listening is off, so only the winning take needs a handoff: at most one per track after the first.
+    assert 1 <= len(handoffs) <= len(plans) - 1

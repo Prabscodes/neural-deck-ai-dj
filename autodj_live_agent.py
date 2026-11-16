@@ -420,13 +420,15 @@ class LiveDJ:
                     render_seconds=time.monotonic()-t_render;t_handoff=time.monotonic()
                     decks.sort(key=lambda item: -item.score)
                     handoffs = None
+                    listening_off = os.environ.get('AUTODJ_LISTENING', 'on').lower() == 'off'
                     if tail is not None:
+                        # With listening off the best-scored take always wins, so only its handoff is needed.
                         handoffs = [prepare_handoff(candidate, tail, tail_grid, tail_origin, plan, self.sr)
-                                    for candidate in decks]
+                                    for candidate in (decks[:1] if listening_off else decks)]
                     handoff_seconds=time.monotonic()-t_handoff;t_listen=time.monotonic()
                     with self.lock:
                         s['state'] = 'listening'
-                    if os.environ.get('AUTODJ_LISTENING', 'on').lower() == 'off':
+                    if listening_off:
                         # Saves one audio-model call per track on a metered deployment; the best signal score wins.
                         selected, listening = 0, {"state": "listening off", "heard_outgoing_phrase": False}
                     else:
