@@ -1,3 +1,5 @@
+import json
+
 import numpy as np
 import pytest
 
@@ -94,3 +96,18 @@ def test_outgoing_phrase_and_rendered_handoff_drive_selection(monkeypatch):
         outgoing=outgoing, handoffs=handoffs)
     assert chosen == 1
     assert review["heard_outgoing_phrase"]
+
+
+def test_kick_flag_is_a_plain_bool_so_the_audit_log_can_serialize_it():
+    # NumPy 2 made np.count_nonzero return np.int64, so this flag became np.bool and crashed json.dumps.
+    rate = 8_000
+    audio = np.zeros(75 * rate, dtype=np.float32)
+    audio[:69 * rate] = .04 * np.sin(2 * np.pi * 440 * np.arange(69 * rate) / rate)
+    pulse_time = np.arange(rate // 5) / rate
+    kick = .65 * np.sin(2 * np.pi * 65 * pulse_time) * np.exp(-16 * pulse_time)
+    for onset in np.arange(0, 68, 60/140):  # kicks from the very first beat
+        start = round(onset * rate)
+        audio[start:start + len(kick)] += kick
+    deck = prepare_deck(np.column_stack((audio, audio)), rate, 140)
+    assert deck.entry_has_kick is True
+    assert json.dumps({"mix_in_has_kick": deck.entry_has_kick}) == '{"mix_in_has_kick": true}'

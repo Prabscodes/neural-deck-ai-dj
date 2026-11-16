@@ -58,7 +58,8 @@ def _bass_pulse(block: np.ndarray, hop: float, threshold: float) -> bool:
         return False
     peaks, _ = signal.find_peaks(np.log(block + .001), distance=round(.18 / hop), prominence=.55)
     # A constant sub or sustained piano note can be loud. Require multiple distinct low-end attacks.
-    return float(np.mean(block)) >= threshold and np.count_nonzero(block[peaks] >= 1.6 * threshold) >= 4
+    # bool(): NumPy 2 returns np.bool here, which json.dumps cannot serialize in the audit log.
+    return bool(float(np.mean(block)) >= threshold and int(np.count_nonzero(block[peaks] >= 1.6 * threshold)) >= 4)
 
 
 def prepare_deck(wave: np.ndarray, sr: int, bpm: float, *, incoming: bool = False) -> Deck:
