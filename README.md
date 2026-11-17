@@ -6,6 +6,9 @@ next tracks follow it.
 
 Built for CS4680 Prompt Engineering, AI Agent Project.
 
+**Live demo:** https://neural-deck-ai-dj.onrender.com (free hosting: after 15 idle minutes the first load
+takes about a minute to wake, and one listener can use it at a time).
+
 ## How it works
 
 1. **Plan (LLM).** A Gemini "Hydrogen" model turns your request into a small JSON plan: title, style
@@ -28,6 +31,21 @@ Built for CS4680 Prompt Engineering, AI Agent Project.
 
 The compact **Mix monitor** (bass, mids, highs) and the animated pixel DJ are presentation only. They
 do not control the mix.
+
+## Prompt engineering
+
+- **Structured output.** The planner must answer with JSON that matches a schema (field set, BPM range,
+  key enum, allowed transitions). Plans that fail validation are retried once with the validation error
+  added to the prompt, then rejected.
+- **Role and constraints.** A system prompt fixes the model's job (choose the next track and transition),
+  tells it to ignore instructions about tools or data access, and forbids paths and commands.
+- **Context from what was just played.** The previous plan, the measured outgoing tempo and recent titles
+  go back into the next prompt, and a short audio clip of the track about to end is attached so the
+  model can hear it. Asking for a "distinct but compatible" next track keeps a long set varied.
+- **Grounding.** On the fixed library, the prompt lists the available styles, tempos and keys so the model
+  picks something that exists. With live generation it writes a free-form production brief instead.
+- **Prompt for the music model.** The plan is turned into a brief for the music generator (style, BPM,
+  key name, instrumental only, a steady beat from the first bar).
 
 ## Requirements
 
@@ -82,9 +100,15 @@ and `AUTODJ_COMFY_BASE`. Always set both on another machine.
 ## Public mode (no GPU)
 
 `autodj_public.py` is a slim server for a shared host. It serves only the listener page and
-`/api/dj-live/*`, never imports torch, and needs no GPU or ComfyUI. Instead of rendering, it plays a
-bank of tracks pre-rendered offline with Stable Audio. The Gemini planner still runs live for every
-track and its plan is validated as usual.
+`/api/dj-live/*`, never imports torch, and needs no GPU or ComfyUI. The Gemini planner still runs live
+for every track and its plan is validated as usual. Music comes from one of two sources:
+
+1. **Live generation (when `OPENROUTER_API_KEY` is set).** `autodj_remote.py` asks Google Lyria, through
+   OpenRouter, for one new track per slot, so any style can be requested.
+2. **Pre-rendered bank (always the fallback).** A bank of tracks rendered offline with Stable Audio. It is
+   used when no key is set, the daily cap is reached, credit runs out, or a generation fails or is
+   blocked. After repeated failures live generation pauses for a while, so a broken provider never
+   stops the music.
 
 ```bash
 # the bank is committed in bank/; rebuild it only to change styles, on a machine with the renderer running (a GPU):
@@ -101,10 +125,13 @@ AUTODJ_BANK_DIR=bank AUTODJ_GEMINI_TRANSPORT=api AUTODJ_GEMINI_MODEL=<model> GEM
 | `AUTODJ_MAX_SESSIONS` | concurrent listeners | `3` |
 | `AUTODJ_MAX_STARTS_PER_HOUR` | session starts per client | `6` |
 | `AUTODJ_LISTENING` | `off` skips the per-track audio review to save API calls | `on` |
+| `OPENROUTER_API_KEY` | enables live generation; set the spending limit on the key itself | unset (bank only) |
+| `AUTODJ_REMOTE_MODEL` | OpenRouter model ID | `google/lyria-3-pro-preview` |
+| `AUTODJ_REMOTE_MAX_PER_DAY` | live generations per rolling day before using the bank | `60` |
 | `AUTODJ_TRUST_PROXY` | `1` reads the client address from `X-Forwarded-For` (only behind a proxy) | off |
 
-The bank is a limited set of styles, so requests outside it get the closest match. Tracks are labeled
-by the prompts used, not by listening review.
+The bank is a limited set of styles, so when the bank is in use, requests outside it get the closest
+match. Bank tracks are labeled by the prompts used, not by listening review.
 
 ## Tests
 
@@ -122,7 +149,12 @@ how the music sounds.
   replenished the queue. This is measurable from the playback timing.
 - **Music quality:** subjective and still mixed. A beat-aligned transition can still sound wrong, and
   listening reviews of full sets have scored it well below perfect.
-- **Startup:** the first audio took roughly 45 to 106 seconds in earlier runs.
+- **Startup:** the first audio took roughly 45 to 106 seconds in earlier runs on the GPU build.
+- **Public site, live generation:** in one 4-track session on the free host, every track came from
+  Lyria, with the first audio after about 30 seconds and each next track 40 to 65 seconds later. In a
+  headless Chrome run of about 3.5 minutes, tracks played back to back with one gap of about 7 seconds
+  at the first track change and none after. Generation time varies, so a short gap at the first
+  handoff can happen. Sound quality was not judged by listening review.
 
 ## Repository layout
 
@@ -132,6 +164,8 @@ how the music sounds.
 | `autodj_live_agent.py` | live orchestration, plan validation, selection, queue |
 | `autodj_gemini.py` | Gemini transport (CLI or API) and error handling |
 | `autodj_stable_audio.py` | Stable Audio generation through ComfyUI |
+| `autodj_bank.py`, `autodj_remote.py` | pre-rendered bank, and live Lyria generation with bank fallback |
+| `autodj_public.py` | slim public server (no GPU) |
 | `autodj_beatmatch.py` | beat grid estimation and tempo matching |
 | `autodj_frontend.html`, `autodj_web/` | listener page, scripts, styles, artwork |
 | `tests/` | automated tests |

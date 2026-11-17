@@ -5,3 +5,6 @@ Powered by Stability AI.
 Stable Audio 3 includes a T5Gemma text encoder. Gemma is provided under and subject to the Gemma Terms of Use found at ai.google.dev/gemma/terms
 
 Model weights are not distributed in this repository.
+
+The public deployment can also generate tracks with Google Lyria, called through OpenRouter. Those outputs
+are subject to Google's and OpenRouter's terms of use. Track planning uses Google's Gemini API.
